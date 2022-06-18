@@ -109,6 +109,33 @@ RegisterNetEvent('weapon:client:AddAmmo', function(type, amount, itemData)
     end
 end)
 
+-- CLIENT SIDE --
+RegisterNetEvent('qb-weapons:client:scratch', function()
+    local ped = PlayerPedId()
+    local weapon = GetSelectedPedWeapon(ped)
+    local weaponammo = GetAmmoInPedWeapon(ped, weapon)
+    if weapon == `WEAPON_UNARMED` then
+        QBCore.Functions.Notify('You dont have a weapon in your hands..', 'error')
+    else
+        TaskStartScenarioInPlace(ped, 'PROP_HUMAN_PARKING_METER')
+        QBCore.Functions.Progressbar("search_register", "Scratching Serial Numbers..", math.random(1000,15000) , false, true, {
+            disableMovement = true,
+            disableCarMovement = true,
+            disableMouse = false,
+            disableCombat = true,
+          }, {}, {}, {}, function() -- Done
+            ClearPedTasks(ped)
+            print(weapon)
+            TriggerServerEvent('qb-weapons:server:scratch', weapon, weaponammo)
+            TriggerEvent('QBCore:Notify', "Serial Number Scratched", "success")
+          end, function()
+            ClearPedTasks(ped)
+            TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["file"], "remove")
+            TriggerEvent('QBCore:Notify', "Serial Number Not Scratched", "error")
+          end) -- Cancel
+    end
+end)
+
 RegisterNetEvent("weapons:client:EquipAttachment", function(ItemData, attachment)
     local ped = PlayerPedId()
     local weapon = GetSelectedPedWeapon(ped)
